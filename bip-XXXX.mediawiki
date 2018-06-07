@@ -771,6 +771,17 @@ TODO: Something about how having only one pool server is great cause you can mul
 
 ; Why TCP? Isn't UDP better for low-latency relay?
 : Because the time-critical packets are designed to fit into 1 TCP frame, using TCP reduces complexity of reliable transport and NAT traversal significantly while still providing low-latency delivery. For bandwidth reduction using broadcast mediums, obviously TCP is not applicable, but reliable delivery should be easily accomplished with an uncongested LAN and redundant packets. Users with severe packet loss issues should consider a more local pool server, and connecting through a FEC-generating proxy, eg QUIC, though the use of such protocols is deliberately left undefined in this specification to reduce complexity.
+: not true. TCP has a lot of issues
+a) TCP is session/connection orineted, for miner connection loose - meaning loose of already assgined & done jobs by miners,
+full reset of session from pool side. this leading to performance degradation & waste of energy/poor performance.
+b) Standard TCP has huge problem in achieving optimal performance on long distances,
+leading to a significant packet delay variation, packet disordering,
+TCP would stop the stream until the lost packet could be retransmitted.
+also lack of achieving optimal performance substantially underutilizes network bandwidth.
+c) TCP has 20 bytes header, over 12 fields, require more memory, has longer procedure/multiple packets for connection establishment.
+UDP is lightweight, header 8 bytes, in times lower memory requirments for server/client - critical for low mem embedded systems. no ordering of messages is very good option for faster delivery clean-flag to miners(new block). this allow to increase mining performance, avoid waste of electrical energy used for mining + allow to faster deliver new block header+transactions, potentialy less empty blocks, more transactions for next block.
+
+
 ; Why add the complexity of the weak blocks relay?
 : Because PPS-based pooling has become a common practice for business reasons, some pools care deeply about being able to optimize the relay of blocks which pay out to them. Thus, to avoid the pools relying heavily on their clients to do their own careful optimization, clients can be made to relay some portion of their blocks efficiently to the pool, further allowing pools to spot-check the validity of the work clients are hashing on. Pools which do not need weak-block-based relay may chose to simply set the ''weak_block_difficulty'' to the current block difficulty and send WEAK_BLOCK_STATE_RESET messages after each WEAK_BLOCK, which implies that it is unlikely the client will ever have a chance to relay a compressed weak block.
 ; What are the intended UX differences for miners today?
